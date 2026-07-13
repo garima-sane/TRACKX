@@ -69,19 +69,23 @@ print("\nNumerical Features:")
 print(numeric_df.columns)
 
 correlation_matrix = numeric_df.corr()
-print(correlation_matrix)
+print(correlation_matrix["popularity"].sort_values(ascending=False))
 
-#Heatmap of the correlation matrix
+# ==========================================================
+# Correlation Heatmap
+# ==========================================================
+
 plt.figure(figsize=(12,8))
 
 sns.heatmap(
     correlation_matrix,
     annot=True,
     cmap="coolwarm",
-    fmt=".2f"
+    fmt=".2f",
+    linewidths=0.5
 )
 
-plt.title("Correlation Heatmap of Spotify Features")
+plt.title("Correlation Heatmap of Spotify Audio Features")
 
 plt.tight_layout()
 
