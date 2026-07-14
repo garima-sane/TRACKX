@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", None)
 
 df=pd.read_csv('data/processed/spotify_cleaned.csv')
 
@@ -47,9 +49,7 @@ plt.xlabel("Popularity")
 plt.ylabel("Number of Songs")
 
 plt.tight_layout()
-
 plt.savefig("outputs/figures/popularity_distribution.png")
-
 #plt.show()
 
 
@@ -122,4 +122,51 @@ plt.ylabel("Genre")
 
 plt.tight_layout()
 plt.savefig("outputs/figures/top10_genres_popularity.png")
+#plt.show()
+
+#---------------------------------------------------------
+## Investigation 4: Hit Song Analysis
+#---------------------------------------------------------
+
+df["hit_song"] = np.where(df["popularity"] >= 80, 1, 0)
+print(df["hit_song"].value_counts())
+
+audio_features = [
+    "danceability",
+    "energy",
+    "loudness",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo"
+]
+
+hit_song_features = df.groupby("hit_song")[audio_features].mean()
+print(hit_song_features)
+
+#difference in means between hit songs and non-hit songs
+mean_diff = hit_song_features.loc[1] - hit_song_features.loc[0]
+difference = mean_diff
+print("\nDifference in Means (Hit Songs - Non-Hit Songs):")
+print(difference)
+
+plt.figure(figsize=(10, 6))
+
+difference.plot(
+    kind="barh",
+    color="steelblue"
+)
+
+plt.title("Difference in Audio Features: Hit Songs vs Non-Hit Songs")
+plt.xlabel("Average Difference (Hit − Non-Hit)")
+plt.ylabel("Audio Feature")
+
+plt.axvline(x=0, color="black", linewidth=1)
+
+plt.tight_layout()
+
+plt.savefig("outputs/figures/hit_song_feature_difference.png")
+
 plt.show()
