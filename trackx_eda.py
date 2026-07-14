@@ -50,7 +50,7 @@ plt.tight_layout()
 
 plt.savefig("outputs/figures/popularity_distribution.png")
 
-plt.show()
+#plt.show()
 
 
 # How many songs are really popular?
@@ -86,9 +86,40 @@ sns.heatmap(
 )
 
 plt.title("Correlation Heatmap of Spotify Audio Features")
+plt.tight_layout()
+plt.savefig("outputs/figures/correlation_heatmap.png")
+#plt.show()
+
+# ==========================================================
+# Investigation 3: Top 10 Genres by Average Popularity
+# ==========================================================
+
+# Calculate average popularity for each genre
+genre_popularity = (
+    df.groupby("track_genre")["popularity"]
+      .mean()
+)
+
+# Sort from highest to lowest and keep only the Top 10
+top10_genres = genre_popularity.sort_values(ascending=False).head(10)
+
+# Reverse so the highest value appears at the TOP
+top10_genres = top10_genres[::-1]
+
+# Create figure
+plt.figure(figsize=(12, 6))
+
+# Horizontal bar chart
+sns.barplot(
+    x=top10_genres.values,
+    y=top10_genres.index
+)
+
+# Titles and labels
+plt.title("Top 10 Spotify Genres by Average Popularity")
+plt.xlabel("Average Popularity")
+plt.ylabel("Genre")
 
 plt.tight_layout()
-
-plt.savefig("outputs/figures/correlation_heatmap.png")
-
+plt.savefig("outputs/figures/top10_genres_popularity.png")
 plt.show()
