@@ -1,17 +1,33 @@
+# ==========================================================
+# TRACKX 2.0
+# Spotify Exploratory Data Analysis
+# Internship Project
+# ==========================================================
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+# ----------------------------------------------------------
+# Display Settings
+# ----------------------------------------------------------
+
 pd.set_option("display.max_columns", None)
 pd.set_option("display.width", None)
 
-df=pd.read_csv('data/processed/spotify_cleaned.csv')
+# ----------------------------------------------------------
+# Load Dataset
+# ----------------------------------------------------------
+
+df = pd.read_csv("data/processed/spotify_cleaned.csv")
 
 print("Dataset Shape:", df.shape)
+
 print("\nColumn Names:")
 print(df.columns)
 
-print("\nDataset Info:")
+print("\nDataset Information:")
 print(df.info())
 
 print("\nMissing Values:")
@@ -20,11 +36,12 @@ print(df.isnull().sum())
 print("\nDuplicate Rows:")
 print(df.duplicated().sum())
 
+
 # ==========================================================
-# Investigation 1: Popularity Distribution
+# Investigation 1 : Popularity Distribution
 # ==========================================================
 
-print("\nPopularity Statistics\n")
+print("\n========== POPULARITY STATISTICS ==========\n")
 
 print(df["popularity"].describe())
 
@@ -34,7 +51,6 @@ print(f"Minimum Popularity: {df['popularity'].min()}")
 print(f"Maximum Popularity: {df['popularity'].max()}")
 print(f"Std Deviation     : {df['popularity'].std():.2f}")
 
-#Setting up the figures
 plt.figure(figsize=(10,6))
 
 sns.histplot(
@@ -49,124 +65,171 @@ plt.xlabel("Popularity")
 plt.ylabel("Number of Songs")
 
 plt.tight_layout()
+
 plt.savefig("outputs/figures/popularity_distribution.png")
-#plt.show()
+
+plt.show()
 
 
-# How many songs are really popular?
+# ----------------------------------------------------------
+# Songs with popularity >= 80
+# ----------------------------------------------------------
+
 popular_songs = df[df["popularity"] >= 80]
 
-print("Songs with popularity ≥ 80:", len(popular_songs))
+print("\nHit Songs (Popularity ≥ 80)")
+print("--------------------------------")
+print("Songs :", len(popular_songs))
+print("Percentage :", round(len(popular_songs) / len(df) * 100, 2), "%")
 
-print("Percentage:", round(len(popular_songs) / len(df) * 100, 2), "%")
 
 # ==========================================================
-# Investigation 2: Correlation Analysis
+# Investigation 2 : Feature Correlation Analysis
 # ==========================================================
 
 numeric_df = df.select_dtypes(include=["number"])
-print("\nNumerical Features:")
-print(numeric_df.columns)
 
 correlation_matrix = numeric_df.corr()
-print(correlation_matrix["popularity"].sort_values(ascending=False))
 
-# ==========================================================
-# Correlation Heatmap
-# ==========================================================
+print("\n========== CORRELATION WITH POPULARITY ==========\n")
+
+print(
+    correlation_matrix["popularity"]
+    .sort_values(ascending=False)
+)
 
 plt.figure(figsize=(12,8))
 
 sns.heatmap(
     correlation_matrix,
-    annot=True,
     cmap="coolwarm",
-    fmt=".2f",
+    annot=False,
     linewidths=0.5
 )
 
-plt.title("Correlation Heatmap of Spotify Audio Features")
+plt.title("Correlation Heatmap of Spotify Features")
+
 plt.tight_layout()
+
 plt.savefig("outputs/figures/correlation_heatmap.png")
-#plt.show()
+
+plt.show()
+
 
 # ==========================================================
-# Investigation 3: Top 10 Genres by Average Popularity
+# Investigation 3 : Genre Popularity Analysis
 # ==========================================================
 
-# Calculate average popularity for each genre
 genre_popularity = (
     df.groupby("track_genre")["popularity"]
       .mean()
+      .sort_values(ascending=False)
 )
 
-# Sort from highest to lowest and keep only the Top 10
-top10_genres = genre_popularity.sort_values(ascending=False).head(10)
+print("\n========== TOP GENRES BY AVERAGE POPULARITY ==========\n")
 
-# Reverse so the highest value appears at the TOP
-top10_genres = top10_genres[::-1]
+print(genre_popularity)
 
-# Create figure
-plt.figure(figsize=(12, 6))
+genre_counts = df["track_genre"].value_counts()
 
-# Horizontal bar chart
+print("\nTracks per Genre:\n")
+print(genre_counts)
+
+top10_genres = genre_popularity.head(10)
+
+plt.figure(figsize=(10,6))
+
 sns.barplot(
     x=top10_genres.values,
     y=top10_genres.index
 )
 
-# Titles and labels
-plt.title("Top 10 Spotify Genres by Average Popularity")
+plt.title("Top 10 Genres by Average Popularity")
 plt.xlabel("Average Popularity")
 plt.ylabel("Genre")
 
 plt.tight_layout()
-plt.savefig("outputs/figures/top10_genres_popularity.png")
-#plt.show()
 
-#---------------------------------------------------------
-## Investigation 4: Hit Song Analysis
-#---------------------------------------------------------
+plt.savefig("outputs/figures/top10_genres.png")
+
+plt.show()
+
+
+# ==========================================================
+# Investigation 4 : Hit Song Feature Analysis
+# ==========================================================
+
+# Create Hit Song Label
 
 df["hit_song"] = np.where(df["popularity"] >= 80, 1, 0)
+
+print("\n========== HIT SONG COUNTS ==========\n")
+
 print(df["hit_song"].value_counts())
+
+
+# Compare Audio Features
 
 audio_features = [
     "danceability",
     "energy",
-    "loudness",
     "speechiness",
     "acousticness",
     "instrumentalness",
     "liveness",
     "valence",
-    "tempo"
+    "tempo",
+    "loudness",
+    "duration_ms"
 ]
 
-hit_song_features = df.groupby("hit_song")[audio_features].mean()
-print(hit_song_features)
+hit_song_features = (
+    df.groupby("hit_song")[audio_features]
+      .mean()
+)
 
-#difference in means between hit songs and non-hit songs
-mean_diff = hit_song_features.loc[1] - hit_song_features.loc[0]
-difference = mean_diff
-print("\nDifference in Means (Hit Songs - Non-Hit Songs):")
+print("\n========== AVERAGE AUDIO FEATURES ==========\n")
+
+print(hit_song_features.to_string())
+
+
+# Difference Analysis
+
+difference = (
+    hit_song_features.loc[1]
+    -
+    hit_song_features.loc[0]
+)
+
+print("\n========== FEATURE DIFFERENCE (Hit - Non-Hit) ==========\n")
+
 print(difference)
 
-plt.figure(figsize=(10, 6))
+
+# Difference Visualization
+
+plt.figure(figsize=(10,6))
 
 difference.plot(
     kind="barh",
     color="steelblue"
 )
 
-plt.title("Difference in Audio Features: Hit Songs vs Non-Hit Songs")
-plt.xlabel("Average Difference (Hit − Non-Hit)")
-plt.ylabel("Audio Feature")
+plt.axvline(
+    x=0,
+    color="black",
+    linewidth=1
+)
 
-plt.axvline(x=0, color="black", linewidth=1)
+plt.title("Difference in Audio Features (Hit vs Non-Hit)")
+plt.xlabel("Average Difference")
+plt.ylabel("Audio Feature")
 
 plt.tight_layout()
 
 plt.savefig("outputs/figures/hit_song_feature_difference.png")
 
 plt.show()
+
+
+print("\nTRACKX 2.0 Exploratory Data Analysis Completed Successfully.")
