@@ -89,6 +89,15 @@ for col in columns:
 print("Outliers handled successfully.")
 
 # -----------------------------------------------------
+# Create Target Variable
+# -----------------------------------------------------
+
+df["hit_song"] = (df["popularity"] >= 80).astype(int)
+
+print("\nTarget variable 'hit_song' created successfully.")
+print(df["hit_song"].value_counts())
+
+# -----------------------------------------------------
 # Save Clean Dataset
 # -----------------------------------------------------
 

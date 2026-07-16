@@ -159,10 +159,6 @@ plt.show()
 # Investigation 4 : Hit Song Feature Analysis
 # ==========================================================
 
-# Create Hit Song Label
-
-df["hit_song"] = np.where(df["popularity"] >= 80, 1, 0)
-
 print("\n========== HIT SONG COUNTS ==========\n")
 
 print(df["hit_song"].value_counts())
@@ -179,8 +175,7 @@ audio_features = [
     "liveness",
     "valence",
     "tempo",
-    "loudness",
-    "duration_ms"
+    "loudness"
 ]
 
 hit_song_features = (
