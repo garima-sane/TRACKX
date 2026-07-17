@@ -7,10 +7,11 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from matplotlib import pyplot as plt
 
 # Machine Learning Libraries
 from sklearn.model_selection import train_test_split
@@ -97,3 +98,102 @@ print("\nLogistic Regression Classification Report:\n", classification_report(y_
 print("\nBalanced Logistic Regression Classification Report:\n", classification_report(y_test, lrb_pred))
 print("\nDecision Tree Classification Report:\n", classification_report(y_test, tree_pred))
 print("\nRandom Forest Classification Report:\n", classification_report(y_test, rf_model.predict(x_test)))
+
+# ==========================================================
+# Random Forest Feature Importance
+# ==========================================================
+
+feature_importance = pd.DataFrame({
+    "Feature": x.columns,
+    "Importance": rf_model.feature_importances_
+})
+
+feature_importance = feature_importance.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+print("\n========== FEATURE IMPORTANCE ==========\n")
+
+print(feature_importance)
+plt.figure(figsize=(10,6))
+
+plt.barh(
+    feature_importance["Feature"],
+    feature_importance["Importance"]
+)
+
+plt.title("Random Forest Feature Importance")
+plt.xlabel("Importance Score")
+plt.ylabel("Feature")
+plt.gca().invert_yaxis()
+plt.tight_layout()
+
+plt.savefig("outputs/feature_importance.png")
+
+#plt.show()
+
+# ==========================================================
+# Confusion Matrix for Random Forest Model
+# ==========================================================
+
+cm = confusion_matrix(
+    y_test,
+    rf_model.predict(x_test)
+)
+
+disp = ConfusionMatrixDisplay(
+    confusion_matrix=cm,
+    display_labels=["Not Hit", "Hit"]
+)
+
+disp.plot(
+    cmap="Blues"
+)
+
+plt.title("Random Forest Confusion Matrix")
+
+plt.tight_layout()
+
+plt.savefig(
+    "outputs/confusion_matrix.png"
+)
+
+plt.show()
+
+#==========================================================
+# Model Comparison Visualization
+#==========================================================
+models = [
+    "Logistic",
+    "Balanced LR",
+    "Decision Tree",
+    "Random Forest"
+]
+
+precision = [0.00, 0.02, 0.54, 0.95]
+
+recall = [0.00, 0.82, 0.56, 0.56]
+
+f1 = [0.00, 0.05, 0.55, 0.71]
+
+X=np.arange(len(models))
+width=0.30
+plt.xticks (X, models)
+
+plt.figure(figsize=(10,6))
+
+plt.bar(X - width, precision, width, label="Precision")
+plt.bar(X, recall, width, label="Recall")
+plt.bar(X + width, f1, width, label="F1 Score")
+
+plt.xticks(X, models)
+plt.ylim(0, 1.1)
+plt.ylabel("Score")
+plt.xlabel("Models")
+plt.title("Comparison of Machine Learning Models")
+plt.legend()
+plt.tight_layout()
+plt.savefig("outputs/model_comparison.png")
+plt.show()
+print("\nTRACKX 3.0 Machine Learning Model Training and Evaluation Completed Successfully.")
